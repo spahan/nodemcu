@@ -1,35 +1,23 @@
--- Print AP list that is easier to read
-function listap(t) -- (SSID : Authmode, RSSI, BSSID, Channel)
-    print("\n\t\t\tSSID\t\t\t\tBSSID\t\t  RSSI\t\t\tAUTHMODE\t\tCHANNEL")
-    for bssid,v in pairs(t) do
-        local ssid, rssi, authmode, channel = string.match(v, "([^,]+),([^,]+),([^,]+),([^,]*)")
-        print(string.format("%32s",ssid).."\t"..bssid.."\t  "..rssi.."\t\t"..authmode.."\t\t\t"..channel)
-    end
+function connect_cb(info)
+    print('wifi: connected to '..info.SSID..'('..info.BSSID..') on channel '..info.channel)
+end
+function disconnect_cb(info)
+    print('wifi:disconnect from '..info.SSID..'('..info.BSSID..') for reason  '..tostring(info.reason))
+end
+function got_ip_cb(info)
+    print('wifi: got ip '..info.IP..' with gateway '..info.gateway..'('..info.netmask..')')
+    resetState()
 end
 
-led = 4
-state = true
+cfg={}
+cfg.ssid="spahan" 
+cfg.pwd="misantrop"
+cfg.auto=true
+cfg.connect_cb=connect_cb
+cfg.disconnect_cb=disconnect_cb
+cfg.got_ip_cb=got_ip_cb
 
---function setState()
---    if (state) then
---        gpio.write(led, gpio.LOW)
---    else
---        gpio.write(led,gpio.HIGH)
---    end
---   state = state ~= true
---end
+--cfg.auth=wifi.WPA2_PSK
+--cfg.channel=13
 
--- Init LED
---gpio.mode(led, gpio.OUTPUT)
---setState()
-
--- scan periodicaly
---tmr.alarm(0,5000,tmr.ALARM_AUTO,function()
---    wifi.sta.getap(1,listap)
---    setState()
---end)
-
---register eventmonitor
-wifi.eventmon.register(wifi.eventmon.AP_PROBEREQRECVED, function(t)
-    print("eventmon"..t.MAC.."\t"..t.RSSI)
-end)
+wifi.sta.config(cfg)
